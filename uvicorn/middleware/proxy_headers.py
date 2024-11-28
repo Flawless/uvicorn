@@ -22,6 +22,7 @@ class ProxyHeadersMiddleware:
 
     def __init__(self, app: ASGI3Application, trusted_hosts: list[str] | str = "127.0.0.1") -> None:
         self.app = app
+        print({"init_trusted": trusted_hosts})
         self.trusted_hosts = _TrustedHosts(trusted_hosts)
 
     async def __call__(self, scope: Scope, receive: ASGIReceiveCallable, send: ASGISendCallable) -> None:
@@ -31,11 +32,15 @@ class ProxyHeadersMiddleware:
         client_addr = scope.get("client")
         client_host = client_addr[0] if client_addr else None
 
+        print({"client_host": client_host, "trusted": self.trusted_hosts})
         if client_host in self.trusted_hosts:
             headers = dict(scope["headers"])
+            print(headers)
 
             if b"x-forwarded-proto" in headers:
+                print("proto header found")
                 x_forwarded_proto = headers[b"x-forwarded-proto"].decode("latin1").strip()
+                print(x_forwarded_proto)
 
                 if x_forwarded_proto in {"http", "https", "ws", "wss"}:
                     if scope["type"] == "websocket":
@@ -43,6 +48,7 @@ class ProxyHeadersMiddleware:
                     else:
                         scope["scheme"] = x_forwarded_proto
 
+            print({"scope": scope})
             if b"x-forwarded-for" in headers:
                 x_forwarded_for = headers[b"x-forwarded-for"].decode("latin1")
                 host = self.trusted_hosts.get_trusted_client_host(x_forwarded_for)

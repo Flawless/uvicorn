@@ -337,6 +337,8 @@ class Config:
         if self.reload and self.workers > 1:
             logger.warning('"workers" flag is ignored when reloading is enabled.')
 
+        logger.info("Loaded config '%s'", self.__dict__)
+
     @property
     def asgi_version(self) -> Literal["2.0", "3.0"]:
         mapping: dict[str, Literal["2.0", "3.0"]] = {
@@ -466,7 +468,9 @@ class Config:
 
         if logger.getEffectiveLevel() <= TRACE_LOG_LEVEL:
             self.loaded_app = MessageLoggerMiddleware(self.loaded_app)
+        print({"proxy_headers": self.proxy_headers})
         if self.proxy_headers:
+            print("wrapping proxy headers")
             self.loaded_app = ProxyHeadersMiddleware(self.loaded_app, trusted_hosts=self.forwarded_allow_ips)
 
         self.loaded = True
