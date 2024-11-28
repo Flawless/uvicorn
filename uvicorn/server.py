@@ -185,6 +185,7 @@ class Server:
         self.started = True
 
     def _log_started_message(self, listeners: Sequence[socket.SocketType]) -> None:
+        logger.warn("You are using custom uvicorn!")
         config = self.config
 
         if config.fd is not None:  # pragma: py-win32
